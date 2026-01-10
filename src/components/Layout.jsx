@@ -24,8 +24,8 @@ const Layout = () => {
     { path: '/', icon: Home, label: t('nav_home') },
     { path: '/crop-recommendation', icon: Target, label: t('nav_recommend') },
     { path: '/crop-tracking', icon: Leaf, label: t('nav_track') },
-    { path: '/disease-detection', icon: Bug, label: t('nav_disease') },
-    { path: '/soil-water', icon: Droplets, label: t('nav_soil') },
+    { path: '/disease-detection', icon: Bug, label: t('nav_disease'), isExternal: true, href: '/scan.html' },
+    { path: '/soil-water', icon: Droplets, label: t('nav_soil'), isExternal: true, href: '/car.html' },
     { path: '/market', icon: TrendingUp, label: t('nav_market') },
     { path: '/weather', icon: CloudSun, label: t('nav_weather') }
   ];
@@ -44,14 +44,25 @@ const Layout = () => {
           <div className="desktop-actions" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
             <nav className="desktop-nav">
               {navItems.map(item => (
-                <Link 
-                  key={item.path} 
-                  to={item.path} 
-                  className={`nav-link ${isActive(item.path) ? 'active' : ''}`}
-                >
-                  <item.icon size={16} />
-                  <span>{item.label}</span>
-                </Link>
+                item.isExternal ? (
+                  <a 
+                    key={item.path} 
+                    href={item.href}
+                    className="nav-link"
+                  >
+                    <item.icon size={16} />
+                    <span>{item.label}</span>
+                  </a>
+                ) : (
+                  <Link 
+                    key={item.path} 
+                    to={item.path} 
+                    className={`nav-link ${isActive(item.path) ? 'active' : ''}`}
+                  >
+                    <item.icon size={16} />
+                    <span>{item.label}</span>
+                  </Link>
+                )
               ))}
             </nav>
 
@@ -127,15 +138,27 @@ const Layout = () => {
             </select>
           </div>
           {navItems.map(item => (
-            <Link 
-              key={item.path}
-              to={item.path} 
-              className={`mobile-nav-link ${isActive(item.path) ? 'active' : ''}`}
-              onClick={toggleMenu}
-            >
-              <item.icon size={20} />
-              <span>{item.label}</span>
-            </Link>
+            item.isExternal ? (
+              <a 
+                key={item.path}
+                href={item.href}
+                className="mobile-nav-link"
+                onClick={toggleMenu}
+              >
+                <item.icon size={20} />
+                <span>{item.label}</span>
+              </a>
+            ) : (
+              <Link 
+                key={item.path}
+                to={item.path} 
+                className={`mobile-nav-link ${isActive(item.path) ? 'active' : ''}`}
+                onClick={toggleMenu}
+              >
+                <item.icon size={20} />
+                <span>{item.label}</span>
+              </Link>
+            )
           ))}
           
           {/* Mobile Logout Button */}

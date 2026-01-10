@@ -230,7 +230,7 @@ app.delete("/api/delete-plant", async (req, res) => {
 });
 // --- CONFIGURATION ---
 // Your camera IP details
-const CAM_HOST = "http://192.168.137.109:8080";
+const CAM_HOST = "http://10.110.145.110:8080";
 const SNAPSHOT_URL = `${CAM_HOST}/?action=snapshot`;
 
 // Enable JSON parsing for potential future use

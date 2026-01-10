@@ -402,10 +402,64 @@
             position: relative;
             left: 50%;
         }
+
+        /* --- BACK BUTTON --- */
+        .back-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 4000;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            text-decoration: none;
+            color: #1e293b;
+            font-weight: 700;
+            font-size: 0.9em;
+        }
+
+        .back-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.25);
+            background: rgba(255, 255, 255, 1);
+        }
+
+        .back-button:active {
+            transform: translateY(0);
+        }
+
+        .back-arrow {
+            font-size: 1.2em;
+            transition: transform 0.3s ease;
+        }
+
+        .back-button:hover .back-arrow {
+            transform: translateX(-3px);
+        }
+
+        @media (max-width: 600px) {
+            .back-button {
+                padding: 8px 16px;
+                font-size: 0.85em;
+            }
+        }
     </style>
 </head>
 
 <body>
+
+    <a href="/" class="back-button">
+        <span class="back-arrow">←</span>
+        <span>Back to Home</span>
+    </a>
 
     <!-- LOGIN SCREEN -->
     <div id="login-overlay">
@@ -535,16 +589,6 @@
                 init3DSystem(SYS_IP);
             }, 500);
         }
-
-        // Auto-connect if IP passed via URL
-        window.onload = function () {
-            const urlParams = new URLSearchParams(window.location.search);
-            const ipParam = urlParams.get('ip');
-            if (ipParam) {
-                document.getElementById('sys-ip').value = ipParam;
-                setTimeout(initSystem, 500); // Small delay to ensure load
-            }
-        };
 
         // --- 1. SOCKET.IO (SENSORS) ---
         function initSocketSystem(ip) {

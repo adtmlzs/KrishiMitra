@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  Leaf, Target, Bug, Droplets, TrendingUp, CloudSun, 
+  Leaf, Target, Bug, Droplets, TrendingUp, CloudSun,
   AlertTriangle, CheckCircle, Calendar, ArrowRight, Sun,
   Package, Clock, ThermometerSun, BarChart3, Sprout,
   MapPin, IndianRupee, RefreshCw, Shield, Activity
@@ -15,7 +15,7 @@ const PriceChart = ({ data, crop }) => {
   const maxPrice = Math.max(...data.map(d => d.price));
   const minPrice = Math.min(...data.map(d => d.price));
   const range = maxPrice - minPrice || 1;
-  
+
   return (
     <div className="price-chart">
       <div className="chart-header">
@@ -25,9 +25,9 @@ const PriceChart = ({ data, crop }) => {
       <div className="chart-bars">
         {data.map((d, i) => (
           <div key={i} className="chart-bar-container">
-            <div 
+            <div
               className="chart-bar"
-              style={{ 
+              style={{
                 height: `${((d.price - minPrice) / range) * 100}%`,
                 minHeight: '20%'
               }}
@@ -46,11 +46,11 @@ const Home = () => {
   const { user } = useAuth();
   const { farmProfile, currentCrop, sowingDate, farmSize, getDaysSinceSowing, activeDisease } = useFarm();
   const { t } = useLanguage();
-  
+
   const [weather, setWeather] = useState({ temp: 25, condition: 'Clear', icon: '01d', humidity: 55, city: 'India' });
   const [priceData, setPriceData] = useState([]);
   const [loading, setLoading] = useState(true);
-  
+
   const daysSinceSowing = getDaysSinceSowing();
   const cropName = currentCrop || 'Tomato';
 
@@ -62,7 +62,7 @@ const Home = () => {
     if (daysSinceSowing < 75) return { name: 'Fruiting', progress: ((daysSinceSowing - 60) / 15) * 100 };
     return { name: 'Ripening', progress: Math.min(100, ((daysSinceSowing - 75) / 15) * 100) };
   };
-  
+
   const cropStage = getCropStage();
   const overallProgress = Math.min(100, (daysSinceSowing / 90) * 100);
 
@@ -89,7 +89,7 @@ const Home = () => {
       } catch (err) {
         console.log('Using default weather');
       }
-      
+
       // Generate mock price data for the crop
       const basePrice = { 'Tomato': 35, 'Potato': 22, 'Onion': 30, 'Wheat': 25, 'Rice': 45 }[cropName] || 30;
       const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Today'];
@@ -100,7 +100,7 @@ const Home = () => {
       setPriceData(mockPrices);
       setLoading(false);
     };
-    
+
     fetchData();
   }, [farmProfile?.location, cropName]);
 
@@ -155,13 +155,13 @@ const Home = () => {
             <h3><Sprout size={20} /> {t('crop_tracking') || 'Crop Tracking'}</h3>
             <Link to="/crop-tracking" className="card-link">View Details <ArrowRight size={16} /></Link>
           </div>
-          
+
           <div className="crop-progress-section">
             <div className="crop-stage-info">
               <span className="stage-name">{cropStage.name} Stage</span>
               <span className="stage-progress">{Math.round(overallProgress)}% Complete</span>
             </div>
-            
+
             <div className="progress-track">
               <div className="progress-fill" style={{ width: `${overallProgress}%` }}></div>
               <div className="stage-markers">
@@ -172,7 +172,7 @@ const Home = () => {
                 <span className={daysSinceSowing >= 75 ? 'active' : ''}>✅</span>
               </div>
             </div>
-            
+
             <div className="crop-stats">
               <div className="crop-stat">
                 <Clock size={16} />
@@ -192,13 +192,13 @@ const Home = () => {
             <h3><BarChart3 size={20} /> {t('market_prices') || 'Market Prices'}</h3>
             <Link to="/market" className="card-link">Find Mandis <ArrowRight size={16} /></Link>
           </div>
-          
+
           {loading ? (
             <div className="chart-loading"><RefreshCw size={24} className="spin" /></div>
           ) : (
             <PriceChart data={priceData} crop={cropName} />
           )}
-          
+
           <div className="price-insight">
             <TrendingUp size={16} />
             <span>Prices trending <strong>up 5%</strong> this week. Good time to sell!</span>
@@ -211,7 +211,7 @@ const Home = () => {
             <h3><CheckCircle size={20} /> {t('todays_tasks') || "Today's Tasks"}</h3>
             <span className="tasks-count">{todaysTasks.filter(t => !t.done).length} pending</span>
           </div>
-          
+
           <div className="tasks-list">
             {todaysTasks.map((task, i) => (
               <div key={i} className={`task-item ${task.done ? 'done' : ''} priority-${task.priority}`}>
@@ -223,7 +223,7 @@ const Home = () => {
               </div>
             ))}
           </div>
-          
+
           <Link to="/crop-tracking" className="view-all-btn">
             View All Tasks <ArrowRight size={16} />
           </Link>
@@ -233,9 +233,9 @@ const Home = () => {
         <div className={`dash-card disease-card ${activeDisease ? 'has-disease' : 'healthy'}`}>
           <div className="card-header">
             <h3><Shield size={20} /> Crop Health Status</h3>
-            <Link to="/disease-detection" className="card-link">Full Diagnosis <ArrowRight size={16} /></Link>
+            <a href="/scan.html" className="card-link">Full Diagnosis <ArrowRight size={16} /></a>
           </div>
-          
+
           {activeDisease ? (
             <div className="disease-alert">
               <div className="disease-alert-header">
@@ -245,7 +245,7 @@ const Home = () => {
                   <span className="disease-stage">{activeDisease.stage} Stage</span>
                 </div>
               </div>
-              
+
               <div className="treatment-progress">
                 <div className="progress-header">
                   <span>Treatment Progress</span>
@@ -255,7 +255,7 @@ const Home = () => {
                   <div className="progress-fill" style={{ width: `${activeDisease.treatmentProgress || 0}%` }}></div>
                 </div>
               </div>
-              
+
               <div className="disease-actions">
                 <span className="next-action">
                   <Clock size={14} /> Next: {activeDisease.nextAction || 'Apply treatment'}
@@ -269,9 +269,9 @@ const Home = () => {
                 <h4>All Clear! 🌿</h4>
                 <p>No diseases detected. Your crops are healthy.</p>
               </div>
-              <Link to="/disease-detection" className="scan-now-btn">
+              <a href="/scan.html" className="scan-now-btn">
                 <Bug size={16} /> Scan Now
-              </Link>
+              </a>
             </div>
           )}
         </div>

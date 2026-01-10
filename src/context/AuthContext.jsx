@@ -10,10 +10,22 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Check for existing token on mount
+  // Check for existing token or guest user on mount
   useEffect(() => {
     const token = localStorage.getItem('token');
-    if (token) {
+    const isGuest = localStorage.getItem('isGuest');
+    
+    if (isGuest === 'true') {
+      // Restore guest user
+      const guestUser = {
+        name: 'Guest User',
+        email: 'guest@krishimitra.com',
+        isGuest: true,
+        isProfileComplete: true
+      };
+      setUser(guestUser);
+      setLoading(false);
+    } else if (token) {
       fetchCurrentUser(token);
     } else {
       setLoading(false);
@@ -68,8 +80,22 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const loginAsGuest = () => {
+    const guestUser = {
+      name: 'Guest User',
+      email: 'guest@krishimitra.com',
+      isGuest: true,
+      isProfileComplete: true
+    };
+    localStorage.setItem('isGuest', 'true');
+    localStorage.removeItem('token'); // Clear any existing token
+    setUser(guestUser);
+    return { success: true, user: guestUser };
+  };
+
   const logout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('isGuest');
     setUser(null);
   };
 
@@ -88,6 +114,7 @@ export const AuthProvider = ({ children }) => {
       isProfileComplete: user?.isProfileComplete || false,
       signup,
       login,
+      loginAsGuest,
       logout,
       updateUser,
       getToken

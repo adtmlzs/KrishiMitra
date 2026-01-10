@@ -10,8 +10,8 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  
-  const { login } = useAuth();
+
+  const { login, loginAsGuest } = useAuth();
   const { t } = useLanguage();
   const navigate = useNavigate();
 
@@ -21,7 +21,7 @@ const Login = () => {
     setIsLoading(true);
 
     const result = await login(email, password);
-    
+
     if (result.success) {
       // Check if profile is complete
       if (result.user.isProfileComplete) {
@@ -32,8 +32,15 @@ const Login = () => {
     } else {
       setError(result.error);
     }
-    
+
     setIsLoading(false);
+  };
+
+  const handleGuestLogin = () => {
+    const result = loginAsGuest();
+    if (result.success) {
+      navigate('/');
+    }
   };
 
   return (
@@ -95,8 +102,8 @@ const Login = () => {
               </button>
             </div>
 
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               className="auth-submit-btn"
               disabled={isLoading}
             >
@@ -116,6 +123,14 @@ const Login = () => {
             <div className="auth-divider">
               <span>{t('or')}</span>
             </div>
+
+            <button
+              type="button"
+              className="auth-guest-btn"
+              onClick={handleGuestLogin}
+            >
+              <span>Continue as Guest</span>
+            </button>
 
             <p className="auth-switch">
               {t('no_account')}{' '}

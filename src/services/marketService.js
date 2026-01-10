@@ -1,7 +1,7 @@
 import axios from "axios";
 import { generateAIResponse } from "./aiService";
 
-const GOOGLE_API_KEY = "AIzaSyBkDD3UamVlyvAuc97RxOuh1go4Q3_MB7g";
+const GOOGLE_API_KEY = import.meta.env.VITE_GOOGLE_API_KEY;
 
 /**
  * Get user's current location
@@ -113,9 +113,9 @@ const calculateDistance = (lat1, lng1, lat2, lng2) => {
   const a =
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
     Math.cos((lat1 * Math.PI) / 180) *
-      Math.cos((lat2 * Math.PI) / 180) *
-      Math.sin(dLng / 2) *
-      Math.sin(dLng / 2);
+    Math.cos((lat2 * Math.PI) / 180) *
+    Math.sin(dLng / 2) *
+    Math.sin(dLng / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return Math.round(R * c * 10) / 10; // Distance in km
 };
@@ -335,27 +335,27 @@ export const getSmartSellingRecommendation = async (
     recommendation,
     bestOption: bestMandi.isProfitable
       ? {
-          mandi: bestMandi.market,
-          distance: bestMandi.distance,
-          pricePerKg: bestMandi.pricePerKg,
-          transportFare: bestMandi.transportCost,
-          netProfit: bestMandi.netProfit,
-          profitPerKg: bestMandi.profitPerKg,
-          vehicle: bestMandi.transport.vehicle,
-          bestTime: "Arrive before 8 AM for best prices",
-          isProfitable: true,
-        }
+        mandi: bestMandi.market,
+        distance: bestMandi.distance,
+        pricePerKg: bestMandi.pricePerKg,
+        transportFare: bestMandi.transportCost,
+        netProfit: bestMandi.netProfit,
+        profitPerKg: bestMandi.profitPerKg,
+        vehicle: bestMandi.transport.vehicle,
+        bestTime: "Arrive before 8 AM for best prices",
+        isProfitable: true,
+      }
       : {
-          mandi: bestMandi.market,
-          distance: bestMandi.distance,
-          pricePerKg: bestMandi.pricePerKg,
-          transportFare: bestMandi.transportCost,
-          netProfit: bestMandi.netProfit,
-          profitPerKg: bestMandi.profitPerKg,
-          vehicle: bestMandi.transport.vehicle,
-          bestTime: "Not recommended - increase quantity",
-          isProfitable: false,
-        },
+        mandi: bestMandi.market,
+        distance: bestMandi.distance,
+        pricePerKg: bestMandi.pricePerKg,
+        transportFare: bestMandi.transportCost,
+        netProfit: bestMandi.netProfit,
+        profitPerKg: bestMandi.profitPerKg,
+        vehicle: bestMandi.transport.vehicle,
+        bestTime: "Not recommended - increase quantity",
+        isProfitable: false,
+      },
     nearestOption: {
       mandi: nearestMandi.market,
       distance: nearestMandi.distance,
@@ -372,7 +372,7 @@ export const getSmartSellingRecommendation = async (
       avgMarketPrice:
         Math.round(
           (mandis.reduce((sum, m) => sum + m.pricePerKg, 0) / mandis.length) *
-            100
+          100
         ) / 100,
       bestPossibleProfit: bestMandi.netProfit,
       transportSavings: Math.abs(

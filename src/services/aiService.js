@@ -1,8 +1,8 @@
 import { findNearestMandis, getCommoditiesList } from "./marketService";
 
-const GEMINI_API_KEY = "AIzaSyCT4Tw9AlDqxLCQodb2j3nSkW4TZUwueLA";
-const GEMINI_URL =
-  "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent";
+const GROQ_API_KEY = import.meta.env.VITE_GROQ_API_KEY;
+const GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
+const GROQ_MODEL = "meta-llama/llama-4-scout-17b-16e-instruct"; // Llama 4 Scout
 
 let lastRequestTime = 0;
 const MIN_REQUEST_INTERVAL = 2000; // 2 sec before requests
@@ -44,19 +44,24 @@ const generateAIResponse = async (
   const finalPrompt = prompt + languageInstruction;
 
   try {
-    const response = await fetch(`${GEMINI_URL}?key=${GEMINI_API_KEY}`, {
+    const response = await fetch(GROQ_API_URL, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        Authorization: `Bearer ${GROQ_API_KEY}`,
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({
-        contents: [
+        model: GROQ_MODEL,
+        messages: [
           {
-            parts: [{ text: finalPrompt }],
+            role: "system",
+            content:
+              "You are Krishi Mitra, a helpful agricultural AI assistant.",
           },
+          { role: "user", content: finalPrompt },
         ],
-        generationConfig: {
-          temperature: 0.7,
-          maxOutputTokens: 2048,
-        },
+        temperature: 0.7,
+        max_tokens: 2048,
       }),
     });
 
@@ -83,8 +88,10 @@ const generateAIResponse = async (
     }
 
     const data = await response.json();
-    if (data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
-      return data.candidates[0].content.parts[0].text;
+    const result = data.choices?.[0]?.message?.content;
+
+    if (result) {
+      return result;
     }
     throw new Error("Invalid response from AI");
   } catch (error) {
