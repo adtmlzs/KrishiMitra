@@ -60,25 +60,15 @@ const Dashboard = () => {
   };
 
   return (
- <div className="dashboard-header">
+    <div className="dashboard-page">
+      <div className="dashboard-header">
         <div>
           <h1>Farm Dashboard</h1>
           <p className="dashboard-subtitle">{farmInfo.name} • {farmInfo.area} hectares • {farmInfo.crop}</p>
         </div>
-        
-        {/* Grouped actions for clean flexbox alignment */}
-        <div className="header-actions" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <button 
-            onClick={() => window.location.href = 'control.html'}
-            className="btn-primary" // Assuming you have standard button classes, otherwise add basic CSS
-            style={{ padding: '8px 16px', borderRadius: '6px', cursor: 'pointer' }}
-          >
-            Rover
-          </button>
-          <div className="harvest-countdown">
-            <Calendar size={20} />
-            <span><strong>{daysToHarvest()}</strong> days to harvest</span>
-          </div>
+        <div className="harvest-countdown">
+          <Calendar size={20} />
+          <span><strong>{daysToHarvest()}</strong> days to harvest</span>
         </div>
       </div>
 
