@@ -1,6 +1,6 @@
 import React from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, X, Sprout, Home, Target, Leaf, Bug, Droplets, TrendingUp, CloudSun, Globe, LogOut, User } from 'lucide-react';
+import { Menu, X, Sprout, Home, Target, Leaf, Bug, Droplets, TrendingUp, CloudSun, Globe, LogOut, User, Joystick } from 'lucide-react';
 import ChatBot from './ChatBot';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
@@ -27,7 +27,8 @@ const Layout = () => {
     { path: '/disease-detection', icon: Bug, label: t('nav_disease'), isExternal: true, href: '/scan.html' },
     { path: '/soil-water', icon: Droplets, label: t('nav_soil'), isExternal: true, href: '/car.html' },
     { path: '/market', icon: TrendingUp, label: t('nav_market') },
-    { path: '/weather', icon: CloudSun, label: t('nav_weather') }
+    { path: '/weather', icon: CloudSun, label: t('nav_weather') },
+    { path: '/rover', icon: Joystick, label: 'Rover', isExternal: true, href: '/control.html' }
   ];
   
   const isActive = (path) => location.pathname === path;
