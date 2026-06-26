@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pro 4WD | FPV Control</title>
+    <style>
+        /* --- CORE STYLES --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+            min-height: 100vh;
+            color: white;
+            overflow: hidden; /* Prevents scrolling while driving */
+            touch-action: none; /* Disables native mobile gestures */
+        }
+
+        body::before {
+            content: ''; position: fixed; inset: 0;
+            background: radial-gradient(circle at 20% 50%, rgba(120, 255, 180, 0.15) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(102, 126, 234, 0.15) 0%, transparent 50%);
+            pointer-events: none; animation: bgShift 20s ease-in-out infinite;
+        }
+
+        @keyframes bgShift {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.05); }
+        }
+
+        /* --- IP CONNECTION OVERLAY --- */
+        #login-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 35, 39, 0.97); backdrop-filter: blur(12px);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 2000; transition: opacity 0.5s;
+        }
+
+        .login-box {
+            background: white; padding: 40px; border-radius: 24px; width: 340px;
+            text-align: center; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+        }
+
+        .login-box h2 { color: #0f2027; font-weight: 800; font-size: 1.8em; margin-bottom: 10px; }
+        .login-box p { color: #64748b; margin-bottom: 25px; font-size: 0.95rem; }
+        
+        .login-box input {
+            width: 100%; padding: 14px; margin-bottom: 15px;
+            border: 2px solid #e2e8f0; border-radius: 12px;
+            font-size: 16px; text-align: center; outline: none;
+            transition: border-color 0.2s;
+        }
+        .login-box input:focus { border-color: #78ffb4; }
+
+        .login-box button {
+            width: 100%; padding: 14px;
+            background: linear-gradient(135deg, #78ffb4 0%, #66d9ff 100%);
+            color: #0f2027; border: none; border-radius: 12px;
+            font-weight: 800; font-size: 16px; cursor: pointer;
+            box-shadow: 0 10px 20px rgba(120, 255, 180, 0.3);
+        }
+        .login-box button:active { transform: translateY(2px); box-shadow: none; }
+        #conn-status { margin-top: 10px; font-size: 12px; color: #ef4444; min-height: 18px; }
+
+        /* --- MAIN DASHBOARD --- */
+        .container {
+            max-width: 800px; margin: 0 auto; padding: 20px;
+            display: none; flex-direction: column; align-items: center;
+            height: 100vh; position: relative; z-index: 1;
+        }
+        .container.active { display: flex; }
+
+        /* --- FPV CAMERA FEED --- */
+        .live-feed-wrapper {
+            width: 100%; max-width: 600px; aspect-ratio: 16/9;
+            background: #000; border-radius: 20px; overflow: hidden;
+            position: relative; margin-bottom: 20px;
+            border: 3px solid rgba(120, 255, 180, 0.5);
+            box-shadow: 0 15px 45px rgba(0,0,0,0.4);
+        }
+        #liveStream { width: 100%; height: 100%; object-fit: cover; }
+        
+        .live-badge {
+            position: absolute; top: 15px; left: 15px;
+            background: rgba(239, 68, 68, 0.9); color: white;
+            padding: 5px 12px; border-radius: 8px;
+            font-weight: 800; font-size: 0.7em; letter-spacing: 1px;
+            animation: flash 2s infinite;
+        }
+        @keyframes flash { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+        /* --- TELEMETRY & SPEED --- */
+        .dashboard-controls {
+            width: 100%; max-width: 600px;
+            background: rgba(255,255,255,0.05); padding: 15px 25px;
+            border-radius: 15px; border: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 20px; text-align: center; backdrop-filter: blur(10px);
+        }
+        
+        #status { font-size: 18px; font-weight: bold; color: #a8e6cf; text-transform: uppercase; margin-bottom: 10px; }
+        
+        .slider-container { display: flex; align-items: center; gap: 15px; }
+        .slider-container label { font-weight: bold; font-size: 14px; width: 100px; text-align: left; }
+        input[type=range] { flex-grow: 1; height: 6px; border-radius: 5px; outline: none; }
+
+        /* --- D-PAD CONTROLLER --- */
+        .d-pad {
+            display: grid; grid-template-columns: 80px 80px 80px; grid-template-rows: 80px 80px 80px;
+            gap: 12px; margin-top: auto; margin-bottom: 30px;
+        }
+
+        .btn {
+            background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 18px; color: white; font-size: 28px;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 6px 0 rgba(0,0,0,0.3); backdrop-filter: blur(5px);
+            user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
+        }
+        .btn.active {
+            background: #78ffb4; color: #0f2027; border-color: #78ffb4;
+            transform: translateY(6px); box-shadow: 0 0px 0 rgba(0,0,0,0.8);
+        }
+
+        .up { grid-column: 2; grid-row: 1; }
+        .left { grid-column: 1; grid-row: 2; }
+        .right { grid-column: 3; grid-row: 2; }
+        .down { grid-column: 2; grid-row: 3; }
+    </style>
+</head>
+<body>
+
+    <div id="login-overlay">
+        <div class="login-box">
+            <h2>🏎️ 4WD Link</h2>
+            <p>Enter Raspberry Pi IP Address</p>
+            <input type="text" id="robot-ip" placeholder="e.g. 192.168.1.50">
+            <button onclick="connectRobot()">Connect</button>
+            <div id="conn-status"></div>
+        </div>
+    </div>
+
+    <div class="container">
+        
+        <div class="live-feed-wrapper">
+            <div class="live-badge">● FPV LIVE</div>
+            <img id="liveStream" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="Camera Feed">
+        </div>
+
+        <div class="dashboard-controls">
+            <div id="status">SYS READY</div>
+            <div class="slider-container">
+                <label>PWR: <span id="speed-val">70</span>%</label>
+                <input type="range" id="speed-slider" min="30" max="100" value="70">
+            </div>
+        </div>
+
+        <div class="d-pad" id="controller">
+            <div class="btn up" data-dir="forward">▲</div>
+            <div class="btn left" data-dir="left">◀</div>
+            <div class="btn right" data-dir="right">▶</div>
+            <div class="btn down" data-dir="backward">▼</div>
+        </div>
+        
+    </div>
+
+    <script>
+        let BASE_IP = "";
+        let API_URL = "";
+        
+        function connectRobot() {
+            const ipInput = document.getElementById('robot-ip').value.trim();
+            if (!ipInput) {
+                document.getElementById('conn-status').innerText = "IP Address is required.";
+                return;
+            }
+
+            // Set global URLs
+            BASE_IP = ipInput;
+            API_URL = `http://${BASE_IP}:5000`;
+
+            // UI Transition
+            document.getElementById('login-overlay').style.opacity = 0;
+            setTimeout(() => {
+                document.getElementById('login-overlay').style.display = 'none';
+                document.querySelector('.container').classList.add('active');
+
+                // Initialize FPV Camera Stream (Port 8080)
+                const liveStream = document.getElementById('liveStream');
+                liveStream.src = `http://${BASE_IP}:8080/?action=stream`;
+                
+                // Fire initial speed sync
+                fetchCommand(`/speed/${document.getElementById('speed-slider').value}`);
+            }, 500);
+        }
+
+        // --- HARDWARE CONTROL LOGIC ---
+        const buttons = document.querySelectorAll('.btn');
+        const statusText = document.getElementById('status');
+        const slider = document.getElementById('speed-slider');
+        const speedVal = document.getElementById('speed-val');
+        let currentDirection = 'stop';
+
+        // mode: 'no-cors' allows the browser to fire requests to the Pi 
+        // without waiting for cross-origin security headers, ensuring zero lag.
+        function fetchCommand(endpoint) {
+            if(!API_URL) return;
+            fetch(`${API_URL}${endpoint}`, { mode: 'no-cors' })
+                .catch(err => console.error('Connection to Pi lost', err));
+        }
+
+        function sendDirection(cmd) {
+            if (currentDirection === cmd) return; 
+            currentDirection = cmd;
+            
+            statusText.innerText = cmd === 'stop' ? 'IDLE' : `MOVING ${cmd}`;
+            statusText.style.color = cmd === 'stop' ? '#a8e6cf' : '#78ffb4';
+            
+            fetchCommand(`/move/${cmd}`);
+        }
+
+        // Dynamic Speed Updates
+        slider.addEventListener('input', (e) => {
+            speedVal.innerText = e.target.value;
+            fetchCommand(`/speed/${e.target.value}`);
+        });
+
+        // Zero-Latency D-Pad Logic
+        buttons.forEach(btn => {
+            const dir = btn.getAttribute('data-dir');
+            
+            btn.addEventListener('pointerdown', (e) => {
+                e.preventDefault(); 
+                btn.classList.add('active');
+                sendDirection(dir);
+                btn.setPointerCapture(e.pointerId);
+            });
+
+            const stopAction = (e) => {
+                e.preventDefault();
+                if (btn.classList.contains('active')) {
+                    btn.classList.remove('active');
+                    sendDirection('stop');
+                }
+            };
+
+            btn.addEventListener('pointerup', stopAction);
+            btn.addEventListener('pointerleave', stopAction);
+            btn.addEventListener('pointercancel', stopAction);
+            btn.addEventListener('contextmenu', e => e.preventDefault());
+        });
+    </script>
+</body>
+</html>
