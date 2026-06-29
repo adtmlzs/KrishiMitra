@@ -2,16 +2,17 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AgroCart Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AgroCart Unified Commander</title>
     <style>
         :root {
             --bg-color: #f4f4f9;
             --card-bg: #ffffff;
-            --text-main: #333333;
-            --text-muted: #777777;
-            --accent: #27ae60;
-            --error: #e74c3c;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --accent: #10b981;
+            --accent-hover: #059669;
+            --error: #ef4444;
         }
 
         body {
@@ -19,7 +20,7 @@
             background-color: var(--bg-color);
             color: var(--text-main);
             margin: 0;
-            padding: 40px 20px;
+            padding: 20px 15px 40px 15px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -27,176 +28,301 @@
 
         .header {
             text-align: center;
-            margin-bottom: 40px;
-        }
-
-        .header h1 {
-            margin: 0;
-            font-size: 2rem;
-            color: var(--text-main);
-        }
-
-        .status {
-            display: inline-block;
-            margin-top: 10px;
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            background-color: #e0e0e0;
-            color: var(--text-muted);
-        }
-
-        .status.online { background-color: #d4efdf; color: #1e8449; }
-        .status.offline { background-color: #fadbd8; color: #b03a2e; }
-
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
+            margin-bottom: 30px;
             width: 100%;
             max-width: 1000px;
         }
 
-        .card {
-            background-color: var(--card-bg);
-            padding: 24px;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-            text-align: center;
-            transition: transform 0.2s;
+        .header h1 {
+            margin: 0;
+            font-size: 1.75rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
         }
 
-        .card:hover {
-            transform: translateY(-2px);
+        .status {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 10px;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            background-color: #e2e8f0;
+            color: var(--text-muted);
+        }
+
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; background-color: #94a3b8; }
+        .status.online { background-color: #dcfce7; color: #166534; }
+        .status.online .status-dot { background-color: #166534; }
+        .status.offline { background-color: #fee2e2; color: #b91c1c; }
+        .status.offline .status-dot { background-color: #b91c1c; }
+
+        .section-title {
+            width: 100%;
+            max-width: 1000px;
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 0 0 15px 5px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            width: 100%;
+            max-width: 1000px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
 
         .card-title {
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             text-transform: uppercase;
             letter-spacing: 1px;
             color: var(--text-muted);
             margin-bottom: 10px;
-            font-weight: 600;
+            font-weight: 700;
         }
 
         .card-value {
-            font-size: 2.5rem;
-            font-weight: bold;
-            color: var(--accent);
-            margin: 10px 0;
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: var(--text-main);
+            line-height: 1.1;
         }
 
         .card-unit {
-            font-size: 1rem;
+            font-size: 0.9rem;
             color: var(--text-muted);
+            font-weight: 600;
         }
 
         .pin-label {
-            font-size: 0.75rem;
-            color: #aaaaaa;
-            margin-top: 10px;
-            display: block;
+            font-size: 0.7rem;
+            color: #cbd5e1;
+            margin-top: 12px;
+            font-family: monospace;
         }
-    </style>
+
+        /* Toggle Switch Styles */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 64px;
+            height: 34px;
+            margin: 10px 0;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #cbd5e1;
+            transition: .3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        input:checked + .slider { background-color: var(--accent); }
+        input:focus + .slider { box-shadow: 0 0 1px var(--accent); }
+        input:checked + .slider:before { transform: translateX(30px); }
+        input:disabled + .slider { opacity: 0.5; cursor: not-allowed; }
+
+        .toggle-label {
+            font-size: 0.9rem;
+            font-weight: 700;
+            margin-top: 5px;
+            color: var(--text-main);
+        }
+    </script>
 </head>
 <body>
 
     <div class="header">
-        <h1>AgroCart Telemetry</h1>
-        <div id="connection-status" class="status">Connecting...</div>
+        <h1>AgroCart Command</h1>
+        <div id="connection-status" class="status">
+            <div class="status-dot"></div>
+            <span id="status-text">Connecting...</span>
+        </div>
     </div>
 
+    <div class="section-title">Actuators</div>
+    <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));">
+        <div class="card">
+            <div class="card-title">System 1</div>
+            <label class="switch">
+                <input type="checkbox" id="toggle-v1" onchange="sendActuatorCommand('V1')">
+                <span class="slider"></span>
+            </label>
+            <div class="toggle-label" id="label-v1">OFF</div>
+            <span class="pin-label">Pin V1 (ON:0, OFF:180)</span>
+        </div>
+
+        <div class="card">
+            <div class="card-title">System 2</div>
+            <label class="switch">
+                <input type="checkbox" id="toggle-v0" onchange="sendActuatorCommand('V0')">
+                <span class="slider"></span>
+            </label>
+            <div class="toggle-label" id="label-v0">OFF</div>
+            <span class="pin-label">Pin V0 (ON:180, OFF:0)</span>
+        </div>
+    </div>
+
+    <div class="section-title">Telemetry</div>
     <div class="grid">
         <div class="card">
             <div class="card-title">Temperature</div>
-            <div class="card-value" id="val-temp">--</div>
-            <div class="card-unit">°C</div>
+            <div><span class="card-value" id="val-temp">--</span><span class="card-unit">°C</span></div>
             <span class="pin-label">Pin V4</span>
         </div>
 
         <div class="card">
             <div class="card-title">Humidity</div>
-            <div class="card-value" id="val-hum">--</div>
-            <div class="card-unit">%</div>
+            <div><span class="card-value" id="val-hum">--</span><span class="card-unit">%</span></div>
             <span class="pin-label">Pin V3</span>
         </div>
 
         <div class="card">
             <div class="card-title">TDS Level</div>
-            <div class="card-value" id="val-tds">--</div>
-            <div class="card-unit">ppm</div>
+            <div><span class="card-value" id="val-tds">--</span><span class="card-unit">ppm</span></div>
             <span class="pin-label">Pin V5</span>
         </div>
 
         <div class="card">
-            <div class="card-title">Soil Moisture 1</div>
-            <div class="card-value" id="val-soil1">--</div>
-            <div class="card-unit">%</div>
+            <div class="card-title">Soil 1</div>
+            <div><span class="card-value" id="val-soil1">--</span><span class="card-unit">%</span></div>
             <span class="pin-label">Pin V6</span>
         </div>
 
         <div class="card">
-            <div class="card-title">Soil Moisture 2</div>
-            <div class="card-value" id="val-soil2">--</div>
-            <div class="card-unit">%</div>
+            <div class="card-title">Soil 2</div>
+            <div><span class="card-value" id="val-soil2">--</span><span class="card-unit">%</span></div>
             <span class="pin-label">Pin V7</span>
         </div>
     </div>
 
     <script>
-        // System Configuration
         const TOKEN = "1YBXf6ErmNZn4siXeKY3QmK4scZkJ-zT";
-        // V3=Humidity, V4=Temp, V5=TDS, V6=Soil1, V7=Soil2
-        const BLYNK_URL = `https://blynk.cloud/external/api/get?token=${TOKEN}&V3&V4&V5&V6&V7`;
-        
-        // Polling interval in milliseconds (5000ms = 5 seconds)
-        // Keep this above 2000ms to avoid Blynk API rate limiting
-        const POLL_INTERVAL = 5000; 
+        // Fetch all required pins: Actuators (V0, V1) and Sensors (V3, V4, V5, V6, V7)
+        const BLYNK_GET_URL = `https://blynk.cloud/external/api/get?token=${TOKEN}&V0&V1&V3&V4&V5&V6&V7`;
+        const BLYNK_UPDATE_URL = `https://blynk.cloud/external/api/update?token=${TOKEN}`;
+        const POLL_INTERVAL = 4000; // 4 seconds
 
         const elStatus = document.getElementById('connection-status');
-        const elTemp = document.getElementById('val-temp');
-        const elHum = document.getElementById('val-hum');
-        const elTds = document.getElementById('val-tds');
-        const elSoil1 = document.getElementById('val-soil1');
-        const elSoil2 = document.getElementById('val-soil2');
+        const elStatusText = document.getElementById('status-text');
 
-        async function fetchSensorData() {
+        // Actuator Control Logic
+        async function sendActuatorCommand(pin) {
+            const toggle = document.getElementById(`toggle-${pin.toLowerCase()}`);
+            const label = document.getElementById(`label-${pin.toLowerCase()}`);
+            const isChecked = toggle.checked;
+            let valueToSend;
+
+            // Apply specific logic per your constraints
+            if (pin === 'V1') {
+                valueToSend = isChecked ? 0 : 180; 
+            } else if (pin === 'V0') {
+                valueToSend = isChecked ? 180 : 0;
+            }
+
+            // Lock UI while sending
+            toggle.disabled = true;
+            label.innerText = "Wait...";
+
             try {
-                const response = await fetch(BLYNK_URL);
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                
-                const data = await response.json();
-
-                // Update UI with fetched values (fallback to '--' if null/undefined)
-                elHum.innerText = data.V3 !== undefined ? parseFloat(data.V3).toFixed(1) : '--';
-                elTemp.innerText = data.V4 !== undefined ? parseFloat(data.V4).toFixed(1) : '--';
-                elTds.innerText = data.V5 !== undefined ? Math.round(data.V5) : '--';
-                elSoil1.innerText = data.V6 !== undefined ? Math.round(data.V6) : '--';
-                elSoil2.innerText = data.V7 !== undefined ? Math.round(data.V7) : '--';
-
-                // Update Status Indicator
-                elStatus.innerText = "Live";
-                elStatus.className = "status online";
-
+                const response = await fetch(`${BLYNK_UPDATE_URL}&${pin}=${valueToSend}`);
+                if (!response.ok) throw new Error("Network response was not ok");
+                label.innerText = isChecked ? "ON" : "OFF";
             } catch (error) {
-                console.error("Failed to fetch data from Blynk:", error);
-                elStatus.innerText = "Offline - API Error";
-                elStatus.className = "status offline";
-                
-                // Clear values on error to prevent displaying stale data
-                elTemp.innerText = '--';
-                elHum.innerText = '--';
-                elTds.innerText = '--';
-                elSoil1.innerText = '--';
-                elSoil2.innerText = '--';
+                console.error(`Failed to update ${pin}:`, error);
+                // Revert switch if network request fails
+                toggle.checked = !isChecked;
+                label.innerText = toggle.checked ? "ON" : "OFF";
+                alert(`Failed to send command to ${pin}. Check connection.`);
+            } finally {
+                toggle.disabled = false;
             }
         }
 
-        // Initialize fetch and set loop
+        // Telemetry Polling Logic
+        async function fetchSensorData() {
+            try {
+                const response = await fetch(BLYNK_GET_URL);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                
+                const data = await response.json();
+
+                // Update Telemetry UI
+                document.getElementById('val-hum').innerText = data.V3 !== undefined ? parseFloat(data.V3).toFixed(1) : '--';
+                document.getElementById('val-temp').innerText = data.V4 !== undefined ? parseFloat(data.V4).toFixed(1) : '--';
+                document.getElementById('val-tds').innerText = data.V5 !== undefined ? Math.round(data.V5) : '--';
+                document.getElementById('val-soil1').innerText = data.V6 !== undefined ? Math.round(data.V6) : '--';
+                document.getElementById('val-soil2').innerText = data.V7 !== undefined ? Math.round(data.V7) : '--';
+
+                // Sync Actuator UI with actual hardware state
+                // V1 Logic: ON state means value is '0', OFF means '180'
+                if (data.V1 !== undefined && !document.getElementById('toggle-v1').disabled) {
+                    const v1Val = parseInt(data.V1);
+                    const isV1On = (v1Val === 0);
+                    document.getElementById('toggle-v1').checked = isV1On;
+                    document.getElementById('label-v1').innerText = isV1On ? "ON" : "OFF";
+                }
+
+                // V0 Logic: ON state means value is '180', OFF means '0'
+                if (data.V0 !== undefined && !document.getElementById('toggle-v0').disabled) {
+                    const v0Val = parseInt(data.V0);
+                    const isV0On = (v0Val === 180);
+                    document.getElementById('toggle-v0').checked = isV0On;
+                    document.getElementById('label-v0').innerText = isV0On ? "ON" : "OFF";
+                }
+
+                // Update Status Indicator
+                elStatusText.innerText = "System Live";
+                elStatus.className = "status online";
+
+            } catch (error) {
+                console.error("Failed to fetch data:", error);
+                elStatusText.innerText = "System Offline";
+                elStatus.className = "status offline";
+            }
+        }
+
+        // Init
         fetchSensorData();
         setInterval(fetchSensorData, POLL_INTERVAL);
     </script>
