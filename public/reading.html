@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgroCart Dashboard</title>
+    <style>
+        :root {
+            --bg-color: #f4f4f9;
+            --card-bg: #ffffff;
+            --text-main: #333333;
+            --text-muted: #777777;
+            --accent: #27ae60;
+            --error: #e74c3c;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 2rem;
+            color: var(--text-main);
+        }
+
+        .status {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            background-color: #e0e0e0;
+            color: var(--text-muted);
+        }
+
+        .status.online { background-color: #d4efdf; color: #1e8449; }
+        .status.offline { background-color: #fadbd8; color: #b03a2e; }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            width: 100%;
+            max-width: 1000px;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            text-align: center;
+            transition: transform 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+        }
+
+        .card-title {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .card-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--accent);
+            margin: 10px 0;
+        }
+
+        .card-unit {
+            font-size: 1rem;
+            color: var(--text-muted);
+        }
+
+        .pin-label {
+            font-size: 0.75rem;
+            color: #aaaaaa;
+            margin-top: 10px;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>AgroCart Telemetry</h1>
+        <div id="connection-status" class="status">Connecting...</div>
+    </div>
+
+    <div class="grid">
+        <div class="card">
+            <div class="card-title">Temperature</div>
+            <div class="card-value" id="val-temp">--</div>
+            <div class="card-unit">°C</div>
+            <span class="pin-label">Pin V4</span>
+        </div>
+
+        <div class="card">
+            <div class="card-title">Humidity</div>
+            <div class="card-value" id="val-hum">--</div>
+            <div class="card-unit">%</div>
+            <span class="pin-label">Pin V3</span>
+        </div>
+
+        <div class="card">
+            <div class="card-title">TDS Level</div>
+            <div class="card-value" id="val-tds">--</div>
+            <div class="card-unit">ppm</div>
+            <span class="pin-label">Pin V5</span>
+        </div>
+
+        <div class="card">
+            <div class="card-title">Soil Moisture 1</div>
+            <div class="card-value" id="val-soil1">--</div>
+            <div class="card-unit">%</div>
+            <span class="pin-label">Pin V6</span>
+        </div>
+
+        <div class="card">
+            <div class="card-title">Soil Moisture 2</div>
+            <div class="card-value" id="val-soil2">--</div>
+            <div class="card-unit">%</div>
+            <span class="pin-label">Pin V7</span>
+        </div>
+    </div>
+
+    <script>
+        // System Configuration
+        const TOKEN = "1YBXf6ErmNZn4siXeKY3QmK4scZkJ-zT";
+        // V3=Humidity, V4=Temp, V5=TDS, V6=Soil1, V7=Soil2
+        const BLYNK_URL = `https://blynk.cloud/external/api/get?token=${TOKEN}&V3&V4&V5&V6&V7`;
+        
+        // Polling interval in milliseconds (5000ms = 5 seconds)
+        // Keep this above 2000ms to avoid Blynk API rate limiting
+        const POLL_INTERVAL = 5000; 
+
+        const elStatus = document.getElementById('connection-status');
+        const elTemp = document.getElementById('val-temp');
+        const elHum = document.getElementById('val-hum');
+        const elTds = document.getElementById('val-tds');
+        const elSoil1 = document.getElementById('val-soil1');
+        const elSoil2 = document.getElementById('val-soil2');
+
+        async function fetchSensorData() {
+            try {
+                const response = await fetch(BLYNK_URL);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+
+                // Update UI with fetched values (fallback to '--' if null/undefined)
+                elHum.innerText = data.V3 !== undefined ? parseFloat(data.V3).toFixed(1) : '--';
+                elTemp.innerText = data.V4 !== undefined ? parseFloat(data.V4).toFixed(1) : '--';
+                elTds.innerText = data.V5 !== undefined ? Math.round(data.V5) : '--';
+                elSoil1.innerText = data.V6 !== undefined ? Math.round(data.V6) : '--';
+                elSoil2.innerText = data.V7 !== undefined ? Math.round(data.V7) : '--';
+
+                // Update Status Indicator
+                elStatus.innerText = "Live";
+                elStatus.className = "status online";
+
+            } catch (error) {
+                console.error("Failed to fetch data from Blynk:", error);
+                elStatus.innerText = "Offline - API Error";
+                elStatus.className = "status offline";
+                
+                // Clear values on error to prevent displaying stale data
+                elTemp.innerText = '--';
+                elHum.innerText = '--';
+                elTds.innerText = '--';
+                elSoil1.innerText = '--';
+                elSoil2.innerText = '--';
+            }
+        }
+
+        // Initialize fetch and set loop
+        fetchSensorData();
+        setInterval(fetchSensorData, POLL_INTERVAL);
+    </script>
+</body>
+</html>
